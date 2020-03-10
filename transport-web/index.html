@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>运输业大数据平台</title>
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/index.css">
+
+    <style>
+        .t_title{
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            font-size: 2.5em;
+            line-height: 80px;
+            color: #fff;
+        }
+//        #chart_map{
+//            cursor: pointer;
+//        }
+        .t_show{
+            position: absolute;
+            top: 0;
+            right: 0;
+            border-radius: 2px;
+            background: #2C58A6;
+            padding: 2px 5px;
+            color: #fff;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<!--header-->
+<div class="header">
+    <div class="bg_header">
+        <div class="header_nav fl t_title">
+            运输业大数据平台
+        </div> 
+    </div>
+</div>
+
+<!--main-->
+<div class="data_content">
+<!--
+    <div class="data_time">
+        温馨提示: 点击模块后跳转至详情页面。        
+    </div>
+-->
+    <div class="data_main">
+        <div class="main_left fl">
+            <div class="left_1 t_btn1" style="cursor: pointer;">
+                <!--左上边框-->
+                <div class="t_line_box">
+                    <i class="t_l_line"></i> 
+                    <i class="l_t_line"></i> 
+                </div> 
+                <!--右上边框-->
+                <div class="t_line_box">
+                    <i class="t_r_line"></i> 
+                    <i class="r_t_line"></i> 
+                </div> 
+                <!--左下边框-->
+                <div class="t_line_box">
+                    <i class="l_b_line"></i> 
+                    <i class="b_l_line"></i> 
+                </div> 
+                    <!--右下边框-->
+                    <div class="t_line_box">
+                    <i class="r_b_line"></i> 
+                    <i class="b_r_line"></i> 
+                </div> 
+                <div class="main_title">
+                    <img src="img/t_1.png" alt="">
+                  货运前十海港
+                </div>
+                <div id="chart_1" class="chart" style="width:100%;height: 280px;"></div>
+            </div>
+            <div class="left_2 t_btn2" style="cursor: pointer;">
+                <!--左上边框-->
+                <div class="t_line_box">
+                    <i class="t_l_line"></i> 
+                    <i class="l_t_line"></i> 
+                </div> 
+                <!--右上边框-->
+                <div class="t_line_box">
+                    <i class="t_r_line"></i> 
+                    <i class="r_t_line"></i> 
+                </div> 
+                <!--左下边框-->
+                <div class="t_line_box">
+                    <i class="l_b_line"></i> 
+                    <i class="b_l_line"></i> 
+                </div> 
+                    <!--右下边框-->
+                    <div class="t_line_box">
+                    <i class="r_b_line"></i> 
+                    <i class="b_r_line"></i> 
+                </div> 
+                <div class="main_title">
+                    <img src="img/t_2.png" alt="">
+                    快递邮电信息
+                </div>
+                <div id="chart_2_1" class="chart t_btn9" style="width:100%;height: 50%;"></div>
+                <div id="chart_2_2" class="chart t_btn9" style="width:100%;height: 50%;"></div>
+            </div>
+        </div>
+        <div class="main_center fl">
+            <div class="center_text t_btn0" style="cursor: pointer;">
+                <!--左上边框-->
+                <div class="t_line_box">
+                    <i class="t_l_line"></i> 
+                    <i class="l_t_line"></i> 
+                </div> 
+                <!--右上边框-->
+                <div class="t_line_box">
+                    <i class="t_r_line"></i> 
+                    <i class="r_t_line"></i> 
+                </div> 
+                <!--左下边框-->
+                <div class="t_line_box">
+                    <i class="l_b_line"></i> 
+                    <i class="b_l_line"></i> 
+                </div> 
+                 <!--右下边框-->
+                 <div class="t_line_box">
+                    <i class="r_b_line"></i> 
+                    <i class="b_r_line"></i> 
+                </div> 
+                <div class="main_title">
+                    <img src="img/t_3.png" alt="">
+                    中国地图
+                </div>
+                <div id="chart_0" style="width:100%;height:610px;"></div>
+            </div>
+        </div>
+        <div class="main_right fr">
+            <div class="right_1 t_btn3" style="cursor: pointer;">
+                <!--左上边框-->
+                <div class="t_line_box">
+                    <i class="t_l_line"></i> 
+                    <i class="l_t_line"></i> 
+                </div> 
+                <!--右上边框-->
+                <div class="t_line_box">
+                    <i class="t_r_line"></i> 
+                    <i class="r_t_line"></i> 
+                </div> 
+                <!--左下边框-->
+                <div class="t_line_box">
+                    <i class="l_b_line"></i> 
+                    <i class="b_l_line"></i> 
+                </div> 
+                    <!--右下边框-->
+                    <div class="t_line_box">
+                    <i class="r_b_line"></i> 
+                    <i class="b_r_line"></i> 
+                </div> 
+                <div class="main_title">
+                    <img src="img/t_3.png" alt="">
+                    运输业就业信息
+                </div>
+                <div id="chart_3" class="echart t_btn7" style="width:100%;height: 280px;"></div>
+            </div>
+            <div class="right_2 t_btn4" style="cursor: pointer;">
+                <!--左上边框-->
+                <div class="t_line_box">
+                    <i class="t_l_line"></i> 
+                    <i class="l_t_line"></i> 
+                </div> 
+                <!--右上边框-->
+                <div class="t_line_box">
+                    <i class="t_r_line"></i> 
+                    <i class="r_t_line"></i> 
+                </div> 
+                <!--左下边框-->
+                <div class="t_line_box">
+                    <i class="l_b_line"></i> 
+                    <i class="b_l_line"></i> 
+                </div> 
+                    <!--右下边框-->
+                    <div class="t_line_box">
+                    <i class="r_b_line"></i> 
+                    <i class="b_r_line"></i> 
+                </div> 
+                <div class="main_title">
+                    <img src="img/t_4.png" alt="">
+                    互联网发展信息
+                </div>
+                <div id="chart_4_1" class="echart fl t_btn4" style="width:100%;height:50%;cursor: pointer;"></div>
+				<div id="chart_4_2" class="echart fl t_btn4" style="width:100%;height:50%;cursor: pointer;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="data_bottom">
+        <div class="bottom_1 fl t_btn5" style="cursor: pointer;">
+            <!--左上边框-->
+            <div class="t_line_box">
+                <i class="t_l_line"></i> 
+                <i class="l_t_line"></i> 
+            </div> 
+            <!--右上边框-->
+            <div class="t_line_box">
+                <i class="t_r_line"></i> 
+                <i class="r_t_line"></i> 
+            </div> 
+            <!--左下边框-->
+            <div class="t_line_box">
+                <i class="l_b_line"></i> 
+                <i class="b_l_line"></i> 
+            </div> 
+            <!--右下边框-->
+            <div class="t_line_box">
+                <i class="r_b_line"></i> 
+                <i class="b_r_line"></i> 
+            </div>
+            <div id="chart_5" class="echart fl t_btn5" style="width:100%;height: 100%;"></div>
+        </div>
+        <div class="bottom_center fl">
+            <div class="bottom_2 fl t_btn6" style="cursor: pointer;">
+                <!--左上边框-->
+                <div class="t_line_box">
+                    <i class="t_l_line"></i> 
+                    <i class="l_t_line"></i> 
+                </div> 
+                <!--右上边框-->
+                <div class="t_line_box">
+                    <i class="t_r_line"></i> 
+                    <i class="r_t_line"></i> 
+                </div> 
+                <!--左下边框-->
+                <div class="t_line_box">
+                    <i class="l_b_line"></i> 
+                    <i class="b_l_line"></i> 
+                </div> 
+                    <!--右下边框-->
+                    <div class="t_line_box">
+                    <i class="r_b_line"></i> 
+                    <i class="b_r_line"></i> 
+                </div>
+                <div class="main_title">
+                    <img src="img/t_5.png" alt="">
+                    铁路客运站
+                </div>
+                <div id="chart_6" class="echart fl t_btn5" style="width:100%;height: 100%;"></div>
+            </div>
+            <div class="bottom_3 fl t_btn7" style="cursor: pointer;">
+                <!--左上边框-->
+                <div class="t_line_box">
+                    <i class="t_l_line"></i> 
+                    <i class="l_t_line"></i> 
+                </div> 
+                <!--右上边框-->
+                <div class="t_line_box">
+                    <i class="t_r_line"></i> 
+                    <i class="r_t_line"></i> 
+                </div> 
+                <!--左下边框-->
+                <div class="t_line_box">
+                    <i class="l_b_line"></i> 
+                    <i class="b_l_line"></i> 
+                </div> 
+                    <!--右下边框-->
+                    <div class="t_line_box">
+                    <i class="r_b_line"></i> 
+                    <i class="b_r_line"></i> 
+                </div>
+                <div class="main_title">
+                    <img src="img/t_8.png" alt="">
+                    铁路货运站
+                </div>
+                <div id="chart_7" class="echart fl t_btn5" style="width:100%;height: 100%;"></div>
+            </div>
+        </div>
+        <div class="bottom_4 fr t_btn8" style="cursor: pointer;">
+            <!--左上边框-->
+            <div class="t_line_box">
+                <i class="t_l_line"></i> 
+                <i class="l_t_line"></i> 
+            </div> 
+            <!--右上边框-->
+            <div class="t_line_box">
+                <i class="t_r_line"></i> 
+                <i class="r_t_line"></i> 
+            </div> 
+            <!--左下边框-->
+            <div class="t_line_box">
+                <i class="l_b_line"></i> 
+                <i class="b_l_line"></i> 
+            </div> 
+                <!--右下边框-->
+                <div class="t_line_box">
+                <i class="r_b_line"></i> 
+                <i class="b_r_line"></i> 
+            </div>
+            <div id="chart_8" class="echart fl t_btn8" style="width:100%;height: 100%;"></div>
+        </div>
+    </div>
+</div>
+
+</body>
+<script src="js/jquery-2.2.1.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/common.js"></script>
+<script src="js/echarts.min.js"></script>
+<script src="js/dataTool.js"></script>
+<script src="js/index.js"></script>
+<script src="js/china.js"></script>
+<script src="js/hunan.js"></script>
+</html>

@@ -1,0 +1,15 @@
+## Rotate nginx logs
+/data/software/nginx/logs/*.log 
+/data/software/nginx/logs/*.access
+/data/software/nginx/logs/*.error
+/data/software/nginx/logs/*.err
+{
+weekly
+rotate 4
+missingok
+dateext
+compress
+notifempty
+copytruncate
+}
+
