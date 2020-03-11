@@ -41,7 +41,7 @@ mysqlChrt=postal.charset or mysql_conn.charset
 ## 获取对应dfwds.code对应的数据，按年份列表输出
 def per_list(_year,_wds,_resultList,_div):
     _xList=[round(_x[1]/_div,2) for _x in _resultList if _x[0]==_year and _x[2]==_wds]
-    return len(_xList)>=1 and _xList[-1] or None
+    return len(_xList)>=1 and _xList[-1] or 0.0
 
 ## 主程序部分
 def series_mod(**kwargs):
