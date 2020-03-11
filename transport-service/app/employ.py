@@ -124,6 +124,9 @@ def main():
         'data': otherPerList
     })
 
+    ## 标签类别修正，添加other标签
+    legendList.append(otherName)
+
     ## 定义输出格式(字典)
     outputDict={
         'title': titleName, 
