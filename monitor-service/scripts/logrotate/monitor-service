@@ -1,0 +1,12 @@
+## Rotate transport-service logs
+/opt/echarts/monitor-service/logs/*.log
+{
+weekly
+rotate 4
+missingok
+dateext
+compress
+notifempty
+copytruncate
+}
+

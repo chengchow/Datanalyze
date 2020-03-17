@@ -1,0 +1,140 @@
+#!/bin/bash
+#chkconfig: 2345 65 35
+
+#. /etc/init.d/functions
+
+SIGN=monitor-service
+TYPE=python
+PORT=10222
+APP_USER=net100
+APP_GROUP=net100
+APP_ROOT=/opt/echarts/${SIGN}
+RUN_ARG=""
+APP=run.py
+PY=/opt/py373/bin/python3
+
+LOGS=$APP_ROOT/logs
+LOG_FILE=$LOGS/${SIGN}.out
+
+CHECK_COUNT=5
+CHECK_INTERVAL=2
+CHECK_STOP_COUNT=10
+CHECK_STOP_INTERVAL=1
+
+if [ ! -d $LOGS ];then
+    mkdir -p $LOGS
+    chown -R $APP_USER:$APP_GROUP $LOGS
+fi
+
+if [ ! -f $LOG_FILE ];then
+    touch $LOG_FILE
+    chown -R $APP_USER:$APP_GROUP $LOG_FILE
+fi
+
+if [ `whoami` = $APP_USER ];then
+    START_COMM="$PY $RUN_ARG $APP_ROOT/$APP"
+elif [ `id -u` = 0 ];then
+    START_COMM="sudo -E -u $APP_USER $PY $RUN_ARG $APP_ROOT/$APP"
+else
+    echo -e "只能在用户(root|$APP_USE)下运行. "
+    exit 1
+fi
+
+app_status() {
+    if [ -z $PORT ];then
+        NUM=$(ps -ef | grep $APP_ROOT | grep $PY | grep -iv grep | wc -l)
+    else
+        NUM=$(netstat -nltu | grep ":$PORT" | wc -l)
+    fi
+
+    if [ $NUM != 0 ];then
+        return 0
+    else
+        return 1
+    fi
+}
+
+get_pid() {
+    PID_LIST=$(ps -ef | grep $APP_ROOT | grep $PY | grep -iv grep | grep -iv sudo | awk '{print $2}')
+    echo -e  "$PID_LIST"
+}
+
+start_mod() {
+    app_status > /dev/null 2>&1
+    if [ `echo $?` = 0 ];then
+        echo -e "这个服务$SIGN(端口:$PORT)正在运行. "
+    else
+        echo -en "正在启动服务$SIGN(端口:$PORT) "
+        $START_COMM > $LOG_FILE 2>&1 &
+        for ((i=1;i<=$CHECK_COUNT;i++));do
+            app_status > /dev/null 2>&1
+            if [ `echo $?` != 0 ];then
+                echo -en .
+                sleep $CHECK_INTERVAL
+            else
+                echo -e "[ 成功 ]"
+                break
+            fi
+            if [ $i = $CHECK_COUNT ];then
+                echo -e "[ 失败 ]\n日志路径: $LOG_FILE"
+                exit 2
+            fi
+        done
+    fi
+}
+
+stop_mod () {
+    app_status > /dev/null 2>&1
+    if [ `echo $?` = 0 ];then
+        PID_LIST=$(get_pid)
+        echo -en "正在停止服务$SIGN(端口:$PORT) "
+        kill -9 $PID_LIST > /dev/null 2>&1 &
+        for ((i=1;i<=$CHECK_STOP_COUNT;i++));do
+           app_status > /dev/null 2>&1
+           if [ `echo $?` = 0 ];then
+                   echo -en .
+                   sleep $CHECK_STOP_INTERVAL
+           else
+                   echo -e " [ 成功 ]"
+                   break
+           fi
+
+           if [ $i = $CHECK_STOP_COUNT ];then
+                   echo -e " [ 失败 ]"
+                   exit 66
+           fi
+        done
+    else
+        echo -e "服务$SIGN(端口:$PORT)并没有运行."
+    fi
+}
+
+status_mod() {
+    app_status > /dev/null 2>&1
+    if [ `echo $?` != 0 ];then
+        echo -e "服务${SIGN}并没有运行. "
+        exit 1
+    else
+        PID_LIST=$(get_pid)
+        echo -e "服务$SIGN(PID: $(echo $PID_LIST))当前正在运行."
+    fi
+}
+
+case $1 in
+    start)
+        start_mod
+    ;;
+    stop)
+        stop_mod
+    ;;
+    restart)
+        stop_mod
+        start_mod
+    ;;
+    status)
+        status_mod
+    ;;
+    *)
+        echo -e "Usage: `basename $0` (start|stop|restart|status)"
+    ;;
+esac

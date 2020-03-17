@@ -1,0 +1,12 @@
+## Rotate transport-batch logs
+/opt/echarts/monitor-batch/logs/*.log
+{
+weekly
+rotate 4
+missingok
+dateext
+compress
+notifempty
+copytruncate
+}
+

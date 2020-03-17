@@ -1,0 +1,25 @@
+## 过滤条件
+filter: '当前无法连接'
+
+## 图表色彩
+colorList:
+  - '#33AED7'
+  - '#D7CD1C'
+  - '#D75E57'
+  - '#4BF0FF'
+  - '#44AFF0'
+  - '#4E82FF'
+  - '#584BFF'
+  - '#BE4DFF'
+  - '#F845F1'
+  - '#FF00FF'
+
+## 图表标题名称
+titleName: '端口超时排行图'
+
+## 图表Y轴显示单位
+yUnit: '次'
+divUnit: 1
+
+## 图表类型
+picType: 'pie'
