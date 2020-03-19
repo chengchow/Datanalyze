@@ -864,4 +864,3 @@ exports.gexf = gexf;
 exports.prepareBoxplotData = prepareBoxplotData;
 
 })));
-//# sourceMappingURL=dataTool.js.map

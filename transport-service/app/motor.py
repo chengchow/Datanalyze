@@ -7,50 +7,62 @@
 4. 公路营运汽车
 """
 
-## 添加全局变量及函数
+## 调用python函数
 import os,sys
 import json
 
-nowPath=os.path.dirname(os.path.abspath(__file__))
-homePath=os.path.join(nowPath,'../')
+## 获取根路径, 并添加到路径变量中
+nowPath  = os.path.dirname(os.path.abspath(__file__))
+homePath = os.path.join(nowPath,'../')
 sys.path.append(homePath)
 
-## 从全局变量中引用motor变量
-from config import motor,mysql_conn
+## 从全局变量文件中引用相应的变量
+from config import motor, mysql_conn, logFormat
 
-## 从全局函数中调用hive查询, 列表去重模块
-from functions import mysql_query,load_yaml_file
+## 从全局函数文件中引用相应的函数
+from functions import mysql_query, load_yaml_file, list_uniq
 
-## 获取yaml数据
-yamlFile=motor.yamlFile
-yamlDict=load_yaml_file(yamlFile)
+## 获取yaml文件数据, 并转成数组
+yamlFile = motor.yamlFile
+yamlDict = load_yaml_file(yamlFile)
 
-## 定义说明标签
+## 获取数据库信息
+mysqlDB   = motor.db      or mysql_conn.db
+mysqlTB   = motor.tb      or mysql_conn.tb
+mysqlHost = motor.host    or mysql_conn.host
+mysqlUser = motor.user    or mysql_conn.user
+mysqlPass = motor.passwd  or mysql_conn.passwd
+mysqlPort = motor.port    or mysql_conn.port
+mysqlChrt = motor.charset or mysql_conn.charset
+
+## 获取说明标签函数
 def legend():
-    _legendSet=set()
-    for e in yamlDict.get('textTagList'):
-        [_legendSet.add(w.get('name')) for w in e.get('specific')]
-    _legendList=list(_legendSet)
+    ## 生成标签列表
+    _legendList = [ w.get('name') for e in yamlDict.get('textTagList') for w in e.get('specific') ]
+    ## 修正标签列表(添加'其他'标签)
     _legendList.append(yamlDict.get('otherLabel'))
+    ## 修正标签列表(列表去重)
+    _legendList = list_uniq(_legendList)
+
     return _legendList
 
 ## 主程序
 def main():
-    ## 读取yaml数据
-    textTagList=yamlDict.get('textTagList')
-    colorList=yamlDict.get('colorList')
-    titleName=yamlDict.get('titleName')
-    yUnit=yamlDict.get('yUnit')
-    divUnit=yamlDict.get('divUnit') or 1
+    ## 从yaml文件数组中获取数据
+    textTagList = yamlDict.get('textTagList')
+    colorList   = yamlDict.get('colorList')
+    titleName   = yamlDict.get('titleName')
+    yUnit       = yamlDict.get('yUnit')
+    divUnit     = yamlDict.get('divUnit') or 1
 
-    ## 获取hive连接信息
-    mysqlDB=motor.db or mysql_conn.db
-    mysqlTB=motor.tb or mysql_conn.tb
-    mysqlHost=motor.host or mysql_conn.host
-    mysqlUser=motor.user or mysql_conn.user
-    mysqlPass=motor.passwd or mysql_conn.passwd
-    mysqlPort=motor.port or mysql_conn.port
-    mysqlChrt=motor.charset or mysql_conn.charset
+    ## 获取数据库信息
+    mysqlDB   = motor.db      or mysql_conn.db
+    mysqlTB   = motor.tb      or mysql_conn.tb
+    mysqlHost = motor.host    or mysql_conn.host
+    mysqlUser = motor.user    or mysql_conn.user
+    mysqlPass = motor.passwd  or mysql_conn.passwd
+    mysqlPort = motor.port    or mysql_conn.port
+    mysqlChrt = motor.charset or mysql_conn.charset
 
     ## 定义输出的数据列表
     dataList=[]
@@ -71,11 +83,12 @@ def main():
                 user=mysqlUser,
                 passwd=mysqlPass,
                 port=mysqlPort,
-                charset=mysqlChrt
+                charset=mysqlChrt,
+                fetchone=1
             )
-            totalValue+=round(float(result[0][1])/divUnit,2)
+            totalValue+=round(float(result.get('value'))/divUnit,2)
             ## 获取数据年份
-            year=str(result[0][0])+'年'
+            year=str(result.get('year'))+'年'
 
             ## 总数data列表
             masterList.append({
@@ -111,7 +124,7 @@ def main():
                 user=mysqlUser,
                 passwd=mysqlPass,
                 port=mysqlPort,
-                charset=mysqlChrt)[0][1])/divUnit,2)
+                charset=mysqlChrt)[0].get('value'))/divUnit,2)
             remainValue-=specValue
 
             branchList.append({
@@ -139,17 +152,20 @@ def main():
             'data': branchList
         })
 
-    outputDict={
-        'name': titleName,
-        'label': legend(),
-        'color': colorList,
-        'data': dataList
+    outputDict = {
+        'name'  : titleName,
+        'label' : legend(),
+        'color' : colorList,
+        'data'  : dataList
     }
 
     ## 转json字符串,不转码
-    outputStr=json.dumps(outputDict,ensure_ascii=False)
+    outputStr = json.dumps(
+        outputDict,
+        ensure_ascii = False
+    )
 
-    ## 存储结果到mysql数据库
+    ## 返回结果
     return outputStr
 
 if __name__ == '__main__':

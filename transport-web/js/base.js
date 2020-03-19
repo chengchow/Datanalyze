@@ -869,6 +869,7 @@ $(function () {
             series: '',            
         };
 
+
         myChart.setOption(option);
 
         $.getJSON("/transport/json/motor",function(result){

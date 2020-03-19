@@ -3,107 +3,118 @@
 互联网宽带接入端口
 """
 
-## 添加全局变量及函数
+## 调用python函数
 import os,sys
 import json
+import logging
 
-nowPath=os.path.dirname(os.path.abspath(__file__))
-homePath=os.path.join(nowPath,'../')
+## 获取根路径, 并添加到路径变量中
+nowPath  = os.path.dirname(os.path.abspath(__file__))
+homePath = os.path.join(nowPath,'../')
 sys.path.append(homePath)
 
-## 从全局变量中引用internet变量
-from config import internet,mysql_conn
+## 从全局变量文件中引用相应的变量
+from config import internet, mysql_conn, logFormat
 
-## 从全局函数中调用hive查询, 列表去重模块
-from functions import mysql_query,list_uniq,load_yaml_file
+## 从全局函数文件中引用相应的函数
+from functions import mysql_query, list_uniq, load_yaml_file
 
-## 获取yaml数据
-yamlFile=internet.portYamlFile
-yamlDict=load_yaml_file(yamlFile)
+## 获取yaml文件数据, 并转成数组
+yamlFile = internet.portYamlFile
+yamlDict = load_yaml_file(yamlFile)
 
-## 获取对应dfwds.code对应的就业人数，按年份列表输出
-def per_list(_year,_wds,_resultList,_div):
-    _xList=[round(_x[1]/_div,2) for _x in _resultList if _x[0]==_year and _x[2]==_wds]
-    return _xList[-1]
+
+## 指定日志格式
+logFormat
+
+## 从resultList中查询对应year, wds的值, 并运算后返回
+def per_list(_year, _wds, _resultList, _div):
+    _xList = [ round(_x.get('value')/_div, 2) for _x in _resultList if _x.get('year') == _year and _x.get('wds') == _wds ]
+    if len(_xList) == 1:
+        return _xList[0]
+    else:
+        logging.warning('数据库存在重复数据, 查询数据返回值不唯一: year={}, wds={}, command={}'.format(
+            _year, _wds, sys.argv[0]))
+        return round(sum(_xList)/len(_xList), 2)
+
+## 根据带人参数查询结果并格式化输出
+def series(_resultList, _dict ,_divUnit, _picType, _yearList):
+    return {
+        'name' : _dict.get('name'),
+        'type' : _picType,
+        'data' : [ per_list(y, _dict.get('wds'), _resultList, _divUnit) for y in _yearList ]
+    }
 
 ## 主程序
 def main():
-    ## 定义相关标签及输出格式
-    textTagList=yamlDict.get('textTagList')
-    legendList=[x.get('name') for x in textTagList]
-    colorList=yamlDict.get('colorList')
-    titleName=yamlDict.get('titleName')
-    yUnit=yamlDict.get('yUnit')
-    divUnit=yamlDict.get('divUnit') or 1
-    picType=yamlDict.get('picType')
+    ## 从yaml文件数组中获取数据
+    textTagList = yamlDict.get('textTagList')
+    legendList  = [ x.get('name') for x in textTagList ]
+    colorList   = yamlDict.get('colorList')
+    titleName   = yamlDict.get('titleName')
+    yUnit       = yamlDict.get('yUnit')
+    divUnit     = yamlDict.get('divUnit') or 1
+    picType     = yamlDict.get('picType')
 
-    ## 定义数据库名称，表名称及查询语句
-    ## 备注: 测试环境性能太差，为节省时间，这里直接查询出运输业人数总数据。
-    mysqlDB=internet.db or mysql_conn.db
-    mysqlTB=internet.tb or mysql_conn.tb
-    mysqlHost=internet.host or mysql_conn.host
-    mysqlUser=internet.user or mysql_conn.user
-    mysqlPass=internet.passwd or mysql_conn.passwd
-    mysqlPort=internet.port or mysql_conn.port
-    mysqlChrt=internet.charset or mysql_conn.charset
+    ## 获取数据库信息
+    mysqlDB   = internet.db      or mysql_conn.db
+    mysqlTB   = internet.tb      or mysql_conn.tb
+    mysqlHost = internet.host    or mysql_conn.host
+    mysqlUser = internet.user    or mysql_conn.user
+    mysqlPass = internet.passwd  or mysql_conn.passwd
+    mysqlPort = internet.port    or mysql_conn.port
+    mysqlChrt = internet.charset or mysql_conn.charset
 
-    ## 设置一个列表收集wds值
-    keyList=[e.get('wds') for e in textTagList]
-    ## wds集合转元组用于HQL查询
-    keyTuple=tuple(keyList)
+    ## 获取数据索引列表
+    keyList  = [ e.get('wds') for e in textTagList ]
+    ## 将索引列表转元组(方便数据库IN逻辑查询)
+    keyTuple = tuple(keyList)
 
-    ## HQL查询语句
+    ## 根据元组长度判断sql查询语句
+    ### python单元素元组写法是(e,), 直接用IN查询会失败
     if len(keyTuple) == 1:
-        sql="SELECT year,value,wds FROM `{}`.`{}` WHERE wds='{}'".format(
-             mysqlDB,mysqlTB,keyTuple[0])
+        sql = "SELECT year,value,wds FROM `{}`.`{}` WHERE wds='{}'".format(
+             mysqlDB, mysqlTB, keyTuple[0])
     elif len(keyTuple) > 1:
-        sql="SELECT year,value,wds FROM `{}`.`{}` WHERE wds IN {}".format(
-             mysqlDB,mysqlTB,keyTuple)
+        sql = "SELECT year,value,wds FROM `{}`.`{}` WHERE wds IN {}".format(
+             mysqlDB, mysqlTB, keyTuple)
 
-    ## 获取查询结果，输出列表，详情查看functions脚本spark_hive_query模块
-    resultList=mysql_query(
-        cmd=sql,
-        host=mysqlHost,
-        user=mysqlUser,
-        passwd=mysqlPass,
-        port=mysqlPort,
-        charset=mysqlChrt
+    ## 调用数据库查询函数查询结果
+    resultList = mysql_query(
+        cmd     = sql,
+        host    = mysqlHost,
+        user    = mysqlUser,
+        passwd  = mysqlPass,
+        port    = mysqlPort,
+        charset = mysqlChrt
     )
 
-    ## 获取年份列表
-    yearList=[y[0] for y in resultList]
-
-    ## 年份列表去重
-    yearList=list_uniq(yearList)
-
-    ## 年份类别排序
+    ## 获取X轴刻度列表
+    yearList = [ y.get('year') for y in resultList ]
+    ## 刻度列表修正(去重)
+    yearList = list_uniq(yearList)
+    ## 刻度列表重新排序
     list.sort(yearList)
 
-    ## 定义series列表
-    seriesList=[]
-    for x in textTagList:
-        ## 获取dfwds.code的数据列表
-        perList=[per_list(y,x.get('wds'),resultList,divUnit) for y in yearList]
-        ## 数据汇总列表修正(汇总列表-dfwds.code列表)
-        seriesList.append({
-            'name': x.get('name'), 
-            'type': picType, 
-            'data': perList
-        })
+    ## 获取series列表
+    seriesList = [ series(resultList, x, divUnit, picType, yearList) for x in textTagList ]
 
-    ## 定义输出格式(字典)
-    outputDict={
-        'title': titleName, 
-        'legend': legendList, 
-        'color': colorList, 
-        'xlabel': yearList, 
-        'yname': yUnit, 
-        'series': seriesList
+    ## 生成输出字典
+    outputDict = {
+        'title'  : titleName, 
+        'legend' : legendList, 
+        'color'  : colorList, 
+        'xlabel' : yearList, 
+        'yname'  : yUnit, 
+        'series' : seriesList
     }
     ## 转json字符串,不转码
-    outputStr=json.dumps(outputDict,ensure_ascii=False)
+    outputStr = json.dumps(
+        outputDict,
+        ensure_ascii = False
+    )
 
-    ## 存储结果到mysql数据库
+    ## 返回结果
     return outputStr
 
 ## 调试

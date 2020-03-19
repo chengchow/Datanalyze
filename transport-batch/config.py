@@ -2,23 +2,27 @@
 """
 该脚本应用用全局变量配置
 """
-## 加载模块
+## 加载 python 模块
 import os,sys,logging
 
-## 该脚本只能被调用
+## 设置脚本只允许调用
 if __name__ == '__main__':
     print(__doc__)
     sys.exit(0)
 
-## 全局变量
-nowPath=os.path.dirname(os.path.abspath(__file__))
-homePath=nowPath
+## 获取根目录位置
+nowPath  = os.path.dirname(os.path.abspath(__file__))
+homePath = nowPath
 
-## 全局路径
-appPath=os.path.join(homePath,'app')
-logPath=os.path.join(homePath,'logs')
+## 获取全局路径
+appPath = os.path.join(homePath,'app')
+logPath = os.path.join(homePath,'logs')
+
+## 项目名称
+projName='transport-batch'
 
 ## 初始化日志
+## 日志说明
 """
 format: 指定输出的格式和内容，format可以输出很多有用信息，如上例所示:
     %(levelno)s: 打印日志级别的数值
@@ -34,37 +38,39 @@ format: 指定输出的格式和内容，format可以输出很多有用信息，
     %(message)s: 打印日志信息
 """
 
-## 指定统一日志格式
+## 日志文件
+logFile=os.path.join(logPath,projName+'.log')
+## 日志格式
 logFormat=logging.basicConfig(
     ## 日志级别: DEBUG, INFO, WARNING, ERROR, CRITICAL, 默认是WARNNING
-    level = logging.INFO,
+    level    = logging.INFO,
     ## 日志格式: 时间, 代码所在文件名, 代码行号, 日志级别名字, 日志信息
-    format = "%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s",
+    format   = "%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s",
     ## 日志打印时间
-    datefmt = "%Y/%m/%d %H:%M:%S %p",
+    datefmt  = "%Y/%m/%d %H:%M:%S %p",
     ## 日志目录
-    filename = nowPath+"/logs/transport-batch.log",
+    filename = logFile,
     ## 打印日志方式 w 或 a
     filemode = 'a'
 )
 
-## mysql连接
+## 存储, 查询数据库(mysql)连接信息
 class mysql_conn():
-    host='localhost'
-    user='root'
-    passwd='R00t@M2r12db'
-    port=3306
-    db='datanalyze'
-    tb='carriage'
+    host   = 'localhost'
+    user   = 'root'
+    passwd = 'R00t@M2r12db'
+    port   = 3306
+    db     = 'datanalyze'
+    tb     = 'carriage'
 
-## 数据获取地址url
-queryUrl='http://data.stats.gov.cn/easyquery.htm'
+## 爬数据的url信息
+queryUrl = 'http://data.stats.gov.cn/easyquery.htm'
 
-## 数据获取客户端信息
+## 爬数据的客户端信息
 headersUserAgent = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.122 Safari/537.36' 
 
-## 获取数据dfwds列表
-dfwdsList=[
+## 爬数据数据识别信息
+dfwdsList = [
     '[{"wdcode":"zb","valuecode":"A0G01"}]',
     '[{"wdcode":"zb","valuecode":"A0G02"}]',
     '[{"wdcode":"zb","valuecode":"A0G04"}]',

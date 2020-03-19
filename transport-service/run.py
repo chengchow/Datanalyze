@@ -3,24 +3,29 @@
 定时处理hive数据，结果输出到mysql
 """
 
-## 添加全局变量及函数
+## 调用python模块
 import os,sys
 import logging
 from flask import Flask
 
-nowPath=os.path.dirname(os.path.abspath(__file__))
-homePath=nowPath
+## 获取根目录路径, 并添加到路径变量中
+nowPath  = os.path.dirname(os.path.abspath(__file__))
+homePath = nowPath
 sys.path.append(homePath)
 
-## 引入全局变量
+## 从全局变量文件中引入变量
 from config import appPath,logFormat
+
+## 添加全局变量app路径到路径变量中
 sys.path.append(appPath)
 
-## 调用日志格式
+## 指定日志格式
 logFormat
 
-app=Flask(__name__)
+## 指定装饰器
+app = Flask(__name__)
 
+## chinamap路由
 @app.route("/transport/json/chinamap")
 def chinamap_mod():
     try:
@@ -35,6 +40,7 @@ def chinamap_mod():
         else:
             return optInfo
 
+## chinarailway路由
 @app.route("/transport/json/chinarailway")
 def chinarailway_mod():
     try:
@@ -49,6 +55,7 @@ def chinarailway_mod():
         else:
             return optInfo
 
+## employ路由
 @app.route("/transport/json/employ")
 def employ_mod():
     try:
@@ -63,6 +70,7 @@ def employ_mod():
         else:
             return optInfo
 
+## express路由
 @app.route("/transport/json/express")
 def express_mod():
     try:
@@ -77,6 +85,7 @@ def express_mod():
         else:
             return optInfo
 
+## lengthfreight路由
 @app.route("/transport/json/lengthfreight")
 def lengthfreight_mod():
     try:
@@ -91,6 +100,7 @@ def lengthfreight_mod():
         else:
             return optInfo
 
+## lengthline路由
 @app.route("/transport/json/lengthline")
 def lengthline_mod():
     try:
@@ -105,6 +115,7 @@ def lengthline_mod():
         else:
             return optInfo
 
+## lengthtraveller路由
 @app.route("/transport/json/lengthtraveller")
 def lengthtraveller_mod():
     try:
@@ -119,6 +130,7 @@ def lengthtraveller_mod():
         else:
             return optInfo
 
+## motor路由
 @app.route("/transport/json/motor")
 def motor_mod():
     try:
@@ -133,6 +145,7 @@ def motor_mod():
         else:
             return optInfo
 
+## netfamily路由
 @app.route("/transport/json/netfamily")
 def netfamily_mod():
     try:
@@ -147,6 +160,7 @@ def netfamily_mod():
         else:
             return optInfo
 
+## netpeople路由
 @app.route("/transport/json/netpeople")
 def netpeople_mod():
     try:
@@ -161,6 +175,7 @@ def netpeople_mod():
         else:
             return optInfo
 
+## netport路由
 @app.route("/transport/json/netport")
 def netport_mod():
     try:
@@ -175,6 +190,7 @@ def netport_mod():
         else:
             return optInfo
 
+## portberth路由
 @app.route("/transport/json/portberth")
 def portberth_mod():
     try:
@@ -189,6 +205,7 @@ def portberth_mod():
         else:
             return optInfo
 
+## portTEU路由
 @app.route("/transport/json/portTEU")
 def portTEU_mod():
     try:
@@ -203,6 +220,7 @@ def portTEU_mod():
         else:
             return optInfo
 
+## portWDB路由
 @app.route("/transport/json/portWDB")
 def portWDB_mod():
     try:
@@ -217,6 +235,7 @@ def portWDB_mod():
         else:
             return optInfo
 
+## postal路由
 @app.route("/transport/json/postal")
 def postal_mod():
     try:
@@ -231,6 +250,7 @@ def postal_mod():
         else:
             return optInfo
 
+## railwayfreight路由
 @app.route("/transport/json/railwayfreight")
 def railwayfreight_mod():
     try:
@@ -245,6 +265,7 @@ def railwayfreight_mod():
         else:
             return optInfo
 
+## railwaytraveller路由
 @app.route("/transport/json/railwaytraveller")
 def railwaytraveller_mod():
     try:
@@ -259,6 +280,7 @@ def railwaytraveller_mod():
         else:
             return optInfo
 
+## traffic路由
 @app.route("/transport/json/traffic")
 def traffic_mod():
     try:
@@ -273,6 +295,7 @@ def traffic_mod():
         else:
             return optInfo
 
+## 指定端口和允许访问地址
 if __name__ == '__main__':
 #    app.run(debug=False)
     app.run(debug=False, port=10166, host='192.168.254.20')
