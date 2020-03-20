@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-客运货运信息，包含：
-1. 客运量
-2. 旅客周转量
-3. 货运量
-4. 货物周转量
+汽车拥有量，包含：
+1. 民用汽车
+2. 私人汽车
+3. 新注册汽车
+4. 公路营运汽车
 """
 
 ## 调用python函数
@@ -17,7 +17,7 @@ homePath = os.path.join(nowPath,'../')
 sys.path.append(homePath)
 
 ## 从全局变量文件中引用相应的变量
-from config import traffic, mysql_conn
+from config import traffic, mysql_conn, logFormat
 
 ## 从全局函数文件中引用相应的函数
 from functions import mysql_query, load_yaml_file, list_uniq
@@ -25,6 +25,110 @@ from functions import mysql_query, load_yaml_file, list_uniq
 ## 获取yaml文件数据, 并转成数组
 yamlFile = traffic.yamlFile
 yamlDict = load_yaml_file(yamlFile)
+
+## 过滤关键词, 查询结果, 返回时间和结果函数
+def get_result(_dict):
+    filterKeys = _dict.get('wds')
+
+    ## 获取数据库信息
+    mysqlDB   = traffic.db      or mysql_conn.db
+    mysqlTB   = traffic.tb      or mysql_conn.tb
+    mysqlHost = traffic.host    or mysql_conn.host
+    mysqlUser = traffic.user    or mysql_conn.user
+    mysqlPass = traffic.passwd  or mysql_conn.passwd
+    mysqlPort = traffic.port    or mysql_conn.port
+    mysqlChrt = traffic.charset or mysql_conn.charset
+
+    ## 查询语句
+    sql = "SELECT year,value FROM {db}.{tb} WHERE wds='{fk}' \
+         AND year=(SELECT MAX(year) FROM {db}.{tb} WHERE wds='{fk}' AND value!=0)".format(
+         db = mysqlDB, tb = mysqlTB, fk = filterKeys)
+
+    ## 查询结果
+    resultDict = mysql_query(
+        cmd      = sql,
+        host     = mysqlHost,
+        user     = mysqlUser,
+        passwd   = mysqlPass,
+        port     = mysqlPort,
+        charset  = mysqlChrt,
+        fetchone = 1
+    )
+
+    return resultDict
+
+## 过滤关键词生成单个项目环图及嵌套饼图数据
+def get_data(_dict):
+     yUnit       = yamlDict.get('yUnit')
+     divUnit     = yamlDict.get('divUnit') or 1
+
+     ## 时间刻度列表
+     yearList = [ get_result(x).get('year') for x in _dict.get('total') ]
+
+     ## 数据列表
+     masterList = [{
+         'name'  : x.get('name') ,
+         'value' : round(get_result(x).get('value') / divUnit,2)
+     } for x in _dict.get('total') ]
+
+     ## 汇总值
+     totalValue = sum(x.get('value') for x in masterList)
+
+     ## 年份列表去重
+     yearList = list(set(yearList))
+
+     ## 生成标题前缀
+     if len(yearList) == 1:
+         yearName = str(yearList[0]) + '年'
+     else:
+         yearName = str(min(yearList)) + '-' + str(max(yearList)) + '年'
+
+     ## 总数列表其他数据
+     name   = yearName + _dict.get('name') + yUnit
+     radius = _dict.get('master').get('radius')
+     center = _dict.get('master').get('center')
+
+     ## 总数列表
+     pieDict = {
+         'name'   : name,
+         'radius' : radius,
+         'center' : center,
+         'data'   : masterList
+     }
+
+     ## 数据列表
+     branchList = [{
+         'name'  : x.get('name') ,
+         'value' : round(get_result(x).get('value') / divUnit,2)
+     } for x in _dict.get('specific') ]
+
+     ## 剩余值
+     otherValue = totalValue - sum(x.get('value') for x in branchList)
+
+     ## 修正其他值由四舍五入导致的负数
+     if otherValue <= 0:
+         otherValue = 0
+
+     ## 环形数据添加other选项
+     branchList.append({
+         'name'  : '其他',
+         'value' : round(otherValue, 2)
+     })
+     
+     ## 分支列表其他数据
+     name   = yearName + _dict.get('name') + yUnit
+     radius = _dict.get('branch').get('radius')
+     center = _dict.get('branch').get('center')
+
+     ## 生成最终数据列表
+     circleDict = {
+         'name'   : name,
+         'radius' : radius,
+         'center' : center,
+         'data'   : branchList
+     }
+
+     return [ pieDict, circleDict ]
 
 ## 获取说明标签函数
 def legend():
@@ -43,111 +147,19 @@ def main():
     textTagList = yamlDict.get('textTagList')
     colorList   = yamlDict.get('colorList')
     titleName   = yamlDict.get('titleName')
-    yUnit       = yamlDict.get('yUnit')
-    divUnit     = yamlDict.get('divUnit') or 1
-
-    ## 获取数据库信息
-    mysqlDB   = traffic.db      or mysql_conn.db
-    mysqlTB   = traffic.tb      or mysql_conn.tb
-    mysqlHost = traffic.host    or mysql_conn.host
-    mysqlUser = traffic.user    or mysql_conn.user
-    mysqlPass = traffic.passwd  or mysql_conn.passwd
-    mysqlPort = traffic.port    or mysql_conn.port
-    mysqlChrt = traffic.charset or mysql_conn.charset
 
     ## 定义输出的数据列表
-    dataList=[]
-    for t in textTagList:
-        ## 总数data列表
-        masterList=[]
-        totalValue=0
-        for w in t.get('total'):
-            filterKeys=w.get('wds')
-            ## hive查询语句
-            sql="SELECT year,value FROM {db}.{tb} WHERE wds='{fk}' \
-                AND year=(SELECT MAX(year) FROM {db}.{tb} WHERE wds='{fk}' AND value!=0)".format(
-                db=mysqlDB, tb=mysqlTB, fk=filterKeys)
-            result=mysql_query(
-                cmd=sql,
-                host=mysqlHost,
-                user=mysqlUser,
-                passwd=mysqlPass,
-                port=mysqlPort,
-                charset=mysqlChrt,
-                fetchone=1
-            )
+    dataList = [ get_data(x) for x in textTagList ]
 
-            totalValue+=round(float(result.get('value'))/divUnit,2)
-            ## 获取数据年份
-            year=str(result.get('year'))+'年'
+    ## 修正数据列表(合并子列表)
+    dataList = [ y for x in dataList for y in x ]
 
-            ## 总数data列表
-            masterList.append({
-                'name': w.get('name'),
-                'value': totalValue
-            })
-
-        ## 总数列表其他数据
-        name=year+t.get('name')+yUnit
-        radius=t.get('master').get('radius')
-        center=t.get('master').get('center')
-
-        ## 总数列表
-        dataList.append({
-            'name': name,
-            'radius': radius,
-            'center': center,
-            'data': masterList
-        })
-
-        ## 具体项列表
-        branchList=[]
-        ## 剩余值
-        remainValue=totalValue
-        for w in t.get('specific'):
-            filterKeys=w.get('wds')
-            sql="SELECT year,value FROM {db}.{tb} WHERE wds='{fk}' \
-                AND year=(SELECT MAX(year) FROM {db}.{tb} WHERE wds='{fk}' AND value!=0)".format(
-                db=mysqlDB, tb=mysqlTB, fk=filterKeys)
-            specValue=round(float(mysql_query(
-                cmd=sql,
-                host=mysqlHost,
-                user=mysqlUser,
-                passwd=mysqlPass,
-                port=mysqlPort,
-                charset=mysqlChrt)[0].get('value'))/divUnit,2)
-            remainValue-=specValue
-
-            branchList.append({
-                'name': w.get('name'),
-                'value': specValue
-            })
-
-        ## 修正由四舍五入导致的误差
-        if remainValue<=0:
-            remainValue=0
-
-        branchList.append({
-            'name': '其他',
-            'value': round(remainValue,2)
-        })
-        
-        name=year+t.get('name')+yUnit
-        radius=t.get('branch').get('radius')
-        center=t.get('branch').get('center')
-
-        dataList.append({
-            'name': name,
-            'radius': radius,
-            'center': center,
-            'data': branchList
-        })
-
-    outputDict={
-        'name': titleName,
-        'label': legend(),
-        'color': colorList,
-        'data': dataList
+    ## 生成最终输出列表
+    outputDict = {
+        'name'  : titleName,
+        'label' : legend(),
+        'color' : colorList,
+        'data'  : dataList
     }
 
     ## 转json字符串,不转码
@@ -159,6 +171,5 @@ def main():
     ## 返回结果
     return outputStr
 
-## 调试
 if __name__ == '__main__':
     print(main())

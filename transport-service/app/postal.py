@@ -48,7 +48,7 @@ def per_list(_year, _wds, _resultList, _div):
     if len(_xList) == 1:
         return _xList[0]
     else:
-        logging.warning('数据库存在重复数据, 查询数据返回值不唯一: year={}, wds={}, command={}'.format(
+        logging.warning('查询结果冗余或为空: year={}, wds={}, command={}'.format(
             _year, _wds, sys.argv[0]))
         return round(sum(_xList)/len(_xList), 2)
 

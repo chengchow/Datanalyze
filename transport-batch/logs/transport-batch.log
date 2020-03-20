@@ -65,3 +65,6 @@
 2020/03/19 08:56:44 AM base.py[line:440] INFO Adding job tentatively -- it will be properly scheduled when the scheduler starts
 2020/03/19 08:56:44 AM base.py[line:881] INFO Added job "main" to job store "default"
 2020/03/19 08:56:44 AM base.py[line:166] INFO Scheduler started
+2020/03/20 09:01:35 AM base.py[line:440] INFO Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2020/03/20 09:01:35 AM base.py[line:881] INFO Added job "main" to job store "default"
+2020/03/20 09:01:35 AM base.py[line:166] INFO Scheduler started

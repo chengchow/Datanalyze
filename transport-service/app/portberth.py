@@ -37,7 +37,7 @@ def mysql_result(indexDict):
     mysqlPort = portberth.port    or mysql_conn.port
     mysqlChrt = portberth.charset or mysql_conn.charset
 
-    filterKeys = indexDict.get('code')
+    filterKeys = indexDict.get('wds')
 
     sql = "SELECT year,value FROM {db}.{tb} WHERE wds='{fk}' \
          AND year=(SELECT MAX(year) FROM {db}.{tb} WHERE wds='{fk}' AND value!=0)".format(
