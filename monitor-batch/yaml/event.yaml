@@ -1,13 +1,13 @@
-## 图表内容标签
+## 内容标签
 textTagList:
-  - name: '信息'   ## 对应zabbix信息
+  - name: '信息'   ## 对应zabbix通知级别
     severity: 1
-  - name: '警告'   ## 对应zabbix警告
+  - name: '警告'   ## 对应zabbix警告级别
     severity: 2
-  - name: '预警'   ## 对应zabbix[一般严重, 严重, 灾难]
+  - name: '预警'   ## 对应zabbix[一般严重, 严重, 灾难]级别
     severity: [3, 4, 5]
 
-## 图表色彩
+## 色彩
 colorList:
   - '#33AED7'
   - '#D7CD1C'
@@ -19,10 +19,10 @@ colorList:
   - '#BE4DFF'
   - '#F845F1'
 
-## 图表标题名称
+## 标题名称
 titleName: '预警触发趋势图'
 
-## 图表Y轴显示单位
+## Y轴刻度显示单位
 yUnit: '次/月'
 divUnit: 1
 

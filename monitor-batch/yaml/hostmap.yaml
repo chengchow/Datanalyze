@@ -7,12 +7,13 @@ subName: "数据来源监控系统"
 ## 副标题连接地址
 subLink: 'http://192.168.1.228'
 
+## 散点最大值, 如果没有程序自动获取
 valueMax: ""
 
 ## 主机最小值, 如果没有程序自动获取
 valueMin: ""
 
-## 索引标签列表及查询标签(groupid)
+## 内容标签
 textTagList:
   - name: '宝山机房'
     describe: '<br>主机数量:'

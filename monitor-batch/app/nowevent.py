@@ -1,99 +1,110 @@
 # -*- coding: utf-8 -*-
 """
-快递业务量
+当月事务触发比例图
 """
 
-## 添加全局变量及函数
+## 调用python模块
 import os,sys
 import json
-import datetime
-import time
+import datetime, time
 
-## 追加环境变量
-nowPath=os.path.dirname(os.path.abspath(__file__))
-homePath=os.path.join(nowPath,'../')
+## 获取根目录, 并添加到全局环境变量中
+nowPath  = os.path.dirname(os.path.abspath(__file__))
+homePath = os.path.join(nowPath,'../')
 sys.path.append(homePath)
 
-## 从全局变量中引用nowevent变量
-from config import nowevent,zbxdb_conn,mysql_conn
+## 从全局变量文件中引用相应变量
+from config import nowevent, zbxdb_conn, mysql_conn
 
-## 从全局函数中调用hive查询, 列表去重模块
-from functions import load_yaml_file,pre_twelve_month,mysql_query,mysql_update
+## 从全局函数文件中引用相应函数
+from functions import load_yaml_file, pre_twelve_month, mysql_query, mysql_update
 
-## 获取yaml数据
-yamlFile=nowevent.yamlFile
-yamlDict=load_yaml_file(yamlFile)
+## 从yaml文件中获取数据, 并转置为数组
+yamlFile = nowevent.yamlFile
+yamlDict = load_yaml_file(yamlFile)
 
+## 结果查询, 从数据库中
 def data_query(_sql):
-    ## 查询结果字典
-    _hostCountList=mysql_query(
-        cmd=_sql,
-        host=zbxdb_conn.host,
-        user=zbxdb_conn.user,
-        passwd=zbxdb_conn.passwd,
-        port=zbxdb_conn.port,
-        charset='utf8'
+    _resultList = mysql_query(
+        cmd      = _sql,
+        host     = zbxdb_conn.host,
+        user     = zbxdb_conn.user,
+        passwd   = zbxdb_conn.passwd,
+        port     = zbxdb_conn.port,
+        fetchone = 1,
+        charset  = 'utf8'
     )
 
-    ## 结果查询
-    if len(_hostCountList)==1:
-        _hostCount=_hostCountList[0].get('result')
-    else:
-        logging.error('查询结果不存在或不唯一. ')
-    return _hostCount
+    ## 返回结果
+    _result = _resultList.get('result')
+    return _result
 
-def data_list(_dict,_clockList,_divUnit):
-    ## 查询数据库(监控)信息
-    db=zbxdb_conn.db
-    tb='events'
-    querySQL=nowevent.querySQL
-    nowMonTime=_clockList[-1][-1]
+## 查询当前月数据
+def data_list(_dict, _clockList, _divUnit):
+    _db       = zbxdb_conn.db
+    _tb       = zbxdb_conn.tb
+    _querySQL = nowevent.querySQL
+    _nowMonTime= max(max(x) for x in _clockList)
 
-    if isinstance(_dict.get('severity'),int):
-        logic="="
-        severity=_dict.get('severity')
-    elif isinstance(_dict.get('severity'),list):
-        logic="IN"
-        severity=tuple(_dict.get('severity'))
+    if isinstance(_dict.get('severity'), int):
+        _logic    = "="
+        _severity = _dict.get('severity')
+    elif isinstance(_dict.get('severity'), list):
+        _logic    = "IN"
+        _severity = tuple(_dict.get('severity'))
 
-    data=data_query(querySQL.format(
-        db,tb,logic,severity,nowMonTime,_dict.get('filter')))/_divUnit
-    return data
+    _data =data_query(_querySQL.format(
+        _db, _tb, _logic, _severity, _nowMonTime, _dict.get('filter'))) / _divUnit
+
+    return _data
 
 ## 主程序
 def main():
-    ## 定义相关标签及输出格式
-    textTagList=yamlDict.get('textTagList')
-    legendList=[x.get('name') for x in textTagList]
-    colorList=yamlDict.get('colorList')
-    titleName=yamlDict.get('titleName')
-    yUnit=yamlDict.get('yUnit')
-    divUnit=yamlDict.get('divUnit') or 1
+    ## 从yaml列表中获取数据
+    textTagList = yamlDict.get('textTagList')
+    legendList  = [ x.get('name') for x in textTagList ]
+    colorList   = yamlDict.get('colorList')
+    titleName   = yamlDict.get('titleName')
+    yUnit       = yamlDict.get('yUnit')
+    divUnit     = yamlDict.get('divUnit') or 1
 
-    clockList=pre_twelve_month()
-    dataList=[{'name': x.get('name'),'value':data_list(x,clockList,divUnit)} for x in textTagList]
+    ## 获取之前一年的月份列表
+    clockList = pre_twelve_month()
 
-    outputDict={
-        'title': titleName,
-        'label': legendList,
-        'color': colorList,
-        'data': dataList
+    ## 生成X轴刻度列表
+    dataList=[
+        {
+            'name': x.get('name'),
+            'value':data_list(x,clockList,divUnit)
+        }
+        for x in textTagList
+    ]
+
+    ## 生成输出字典
+    outputDict = {
+        'title' : titleName,
+        'label' : legendList,
+        'color' : colorList,
+        'data'  : dataList
     }
 
     ## 输出字典转字符串
-    outputStr=json.dumps(outputDict,ensure_ascii=False)
+    outputStr = json.dumps(
+        outputDict,
+        ensure_ascii = False
+    )
 
-    ## 存储结果到mysql数据库
+    ## 存储结果到数据库
     mysql_update(
-        host=mysql_conn.host,
-        user=mysql_conn.user,
-        passwd=mysql_conn.passwd,
-        port=mysql_conn.port,
-        db=mysql_conn.db,
-        tb=mysql_conn.tb,
-        name=nowevent.label,
-        data=outputStr,
-        unixTime=int(time.time())
+        host     = mysql_conn.host,
+        user     = mysql_conn.user,
+        passwd   = mysql_conn.passwd,
+        port     = mysql_conn.port,
+        db       = mysql_conn.db,
+        tb       = mysql_conn.tb,
+        name     = nowevent.label,
+        data     = outputStr,
+        unixTime = int(time.time())
     )
 
 ## 调试
